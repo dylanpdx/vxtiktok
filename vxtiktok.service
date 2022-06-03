@@ -1,0 +1,15 @@
+[Unit]
+Description=vxtiktok WSGI service
+After=network.target
+
+[Service]
+User=dylan
+Group=dylan
+WorkingDirectory=/home/dylan/vxtiktok
+Environment="PATH=/home/dylan/vxtiktok/venv/bin"
+ExecStart=/home/dylan/vxtiktok/venv/bin/uwsgi --ini vxtiktok.ini
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
