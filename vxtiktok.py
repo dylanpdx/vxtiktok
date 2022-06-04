@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect
 from yt_dlp import YoutubeDL
 from flask_cors import CORS
 import json
+import cache
 
 app = Flask(__name__)
 CORS(app)
@@ -39,7 +40,11 @@ def getVideoFromPostURL(url):
         return result
 
 def embed_tiktok(post_link):
-    videoInfo = getVideoFromPostURL(post_link)
+    if cache.isCached(post_link):
+        videoInfo = cache.getFromCache(post_link)
+    else:
+        videoInfo = getVideoFromPostURL(post_link)
+        cache.addToCache(post_link, videoInfo)
     directURL = findApiFormat(videoInfo)
     return render_template('video.html', videoInfo=videoInfo,mp4URL=directURL,appname="vxTiktok")
 
@@ -49,9 +54,13 @@ def main():
 
 @app.route('/<path:sub_path>')
 def embedTiktok(sub_path):
+    user_agent = request.headers.get('user-agent')
     baseURL = request.base_url
     baseURL=baseURL.replace("vxtiktok","tiktok").replace("%40","@")
-    return embed_tiktok(baseURL)
+    if user_agent in embed_user_agents:
+        return embed_tiktok(baseURL)
+    else:
+        return redirect(baseURL)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
