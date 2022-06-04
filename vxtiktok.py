@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 from yt_dlp import YoutubeDL
 from flask_cors import CORS
 import json
@@ -45,12 +45,12 @@ def embed_tiktok(post_link):
 
 @app.route('/')
 def main():
-    return ""
+    return redirect('https://github.com/dylanpdx/vxtiktok')
 
 @app.route('/<path:sub_path>')
 def embedTiktok(sub_path):
     baseURL = request.base_url
-    baseURL=baseURL.replace("vxtiktok","tiktok")
+    baseURL=baseURL.replace("vxtiktok","tiktok").replace("%40","@")
     return embed_tiktok(baseURL)
 
 if __name__ == "__main__":
