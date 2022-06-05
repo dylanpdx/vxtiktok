@@ -2,8 +2,4 @@ __pycache__
 venv/
 node_modules
 tmp/
-#SERVERLESS
-admin.env
-.env
-_meta
-.serverless
+*.conf

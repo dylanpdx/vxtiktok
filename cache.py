@@ -1,3 +1,4 @@
+import config
 
 def isCached(url):
     return False

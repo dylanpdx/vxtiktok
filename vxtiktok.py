@@ -3,6 +3,7 @@ from yt_dlp import YoutubeDL
 from flask_cors import CORS
 import json
 import cache
+import config
 
 app = Flask(__name__)
 CORS(app)
@@ -50,13 +51,13 @@ def embed_tiktok(post_link):
 
 @app.route('/')
 def main():
-    return redirect('https://github.com/dylanpdx/vxtiktok')
+    return redirect(config.currentConfig["MAIN"]["repoURL"])
 
 @app.route('/<path:sub_path>')
 def embedTiktok(sub_path):
     user_agent = request.headers.get('user-agent')
     baseURL = request.base_url
-    baseURL=baseURL.replace("vxtiktok","tiktok").replace("%40","@")
+    baseURL=baseURL.replace(config.currentConfig["MAIN"]["domainName"],"tiktok.com").replace("%40","@")
     if user_agent in embed_user_agents:
         return embed_tiktok(baseURL)
     else:
