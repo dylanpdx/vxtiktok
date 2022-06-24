@@ -41,7 +41,8 @@ def getVideoFromPostURL(url):
         return result
 
 def embed_tiktok(post_link):
-    if cache.isCached(post_link):
+    cachedItem = cache.getFromCache(post_link)
+    if cachedItem != None:
         videoInfo = cache.getFromCache(post_link)
     else:
         videoInfo = getVideoFromPostURL(post_link)
@@ -57,6 +58,7 @@ def main():
 def embedTiktok(sub_path):
     user_agent = request.headers.get('user-agent')
     baseURL = request.base_url
+    # bug: if the link doesn't end up being https://www.tiktok.com (for example https://tiktok.com) yt-dlp can't parse it
     baseURL=baseURL.replace(config.currentConfig["MAIN"]["domainName"],"tiktok.com").replace("%40","@")
     if user_agent in embed_user_agents:
         return embed_tiktok(baseURL)
