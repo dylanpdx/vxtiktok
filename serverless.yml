@@ -1,0 +1,78 @@
+service: vxTiktok
+
+provider:
+  name: aws
+  runtime: python3.8
+  stage: dev
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - { "Fn::GetAtt": ["vxTiktokDynamoTable", "Arn" ] }
+  environment:
+    APP_NAME: vxTiktok
+    EMBED_COLOR: \#EE1D52
+    REPO_URL: https://github.com/dylanpdx/vxtiktok
+    DOMAINNAME: vxtiktok.com
+
+    CACHE_METHOD: dynamodb
+    DATABASE_URL: none
+    CACHE_TABLE: ${self:custom.tableName}
+    CACHE_TTL: 86400
+
+    RUNNING_SERVERLESS: 1
+
+package:
+  patterns:
+    - '!node_modules/**'
+    - '!venv/**'
+
+plugins:
+  - serverless-wsgi
+  - serverless-python-requirements
+  - serverless-plugin-common-excludes
+  - serverless-plugin-include-dependencies
+
+functions:
+  vxTiktokApp:
+    handler: wsgi_handler.handler
+    url: true
+    timeout: 5
+    memorySize: 150
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
+
+
+custom:
+  tableName: 'tiktok-table-${self:provider.stage}'
+  wsgi:
+    app: vxtiktok.app
+  pythonRequirements:
+    layer: true
+    dockerizePip: true
+
+	
+resources:
+  Resources:
+    vxTiktokDynamoTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: url
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: url
+            KeyType: HASH
+        TableName: ${self:custom.tableName}
+        BillingMode: PAY_PER_REQUEST
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true

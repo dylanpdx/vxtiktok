@@ -1,33 +1,5 @@
-appdirs==1.4.4
-Brotli==1.0.9
-certifi==2022.5.18.1
-charset-normalizer==2.0.12
-click==8.0.4
-colorama==0.4.4
-dataclasses==0.8; python_version < '3.8'
-ffmpeg-python==0.2.0
 Flask==2.0.3
 Flask-Cors==3.0.10
-future==0.18.2
-idna==3.3
-importlib-metadata==4.8.3
-importlib-resources==5.4.0
-itsdangerous==2.0.1
-Jinja2==3.0.3
-MarkupSafe==2.0.1
-mutagen==1.45.1
-pycryptodomex==3.14.1
-pyee==8.2.2
-pyppeteer==0.2.6
-requests==2.27.1
-selenium==3.141.0
-six==1.16.0
-tqdm==4.64.0
-typing_extensions==4.1.1
-urllib3==1.26.9
-websockets==9.1
-Werkzeug==2.0.3
 yt-dlp==2022.6.22.1
-zipp==3.6.0
-uWSGI==2.0.20; sys_platform=="linux"
 pymongo==4.1.1
+boto3==1.24.89
