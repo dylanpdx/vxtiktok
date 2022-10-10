@@ -43,7 +43,7 @@ functions:
   vxTiktokApp:
     handler: wsgi_handler.handler
     url: true
-    timeout: 5
+    timeout: 15
     memorySize: 150
     layers:
       - Ref: PythonRequirementsLambdaLayer
