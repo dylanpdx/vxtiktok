@@ -26,13 +26,13 @@ embed_user_agents = [
 def findApiFormat(videoInfo):
     for format in videoInfo['formats']:
         if format['format_id'] == 'download_addr-0':
-            return format['url']
+            return format
     # not found, search for the next best one
     for format in videoInfo['formats']:
         if format['url'].startswith('http://api'):
-            return format['url']
+            return format
     # not found, return the first one
-    return videoInfo['formats'][0]['url']
+    return videoInfo['formats'][0]
 
 
 def getVideoFromPostURL(url):
@@ -47,8 +47,9 @@ def embed_tiktok(post_link):
     else:
         videoInfo = getVideoFromPostURL(post_link)
         cache.addToCache(post_link, videoInfo)
-    directURL = findApiFormat(videoInfo)
-    return render_template('video.html', videoInfo=videoInfo,mp4URL=directURL,appname="vxTiktok")
+    vFormat = findApiFormat(videoInfo)
+    directURL = vFormat['url']
+    return render_template('video.html', videoInfo=videoInfo,mp4URL=directURL,vFormat=vFormat,appname="vxTiktok")
 
 @app.route('/')
 def main():

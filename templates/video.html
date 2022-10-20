@@ -6,8 +6,8 @@
 <meta name="twitter:card" content="player" />
 <meta name="twitter:title" content="@{{ videoInfo.uploader }} on TikTok" />
 <meta name="twitter:image" content="{{ videoInfo.thumbnail }}" />
-<meta name="twitter:player:width" content="720" />
-<meta name="twitter:player:height" content="480" />
+<meta name="twitter:player:width" content="{{ vFormat.width }}" />
+<meta name="twitter:player:height" content="{{ vFormat.height }}" />
 <meta name="twitter:player:stream" content="{{ mp4URL }}" />
 <meta name="twitter:player:stream:content_type" content="video/mp4" />
 
@@ -15,8 +15,8 @@
 <meta property="og:video" content="{{ mp4URL }}" />
 <meta property="og:video:secure_url" content="{{ mp4URL }}" />
 <meta property="og:video:type" content="video/mp4" />
-<meta property="og:video:width" content="720" />
-<meta property="og:video:height" content="480" />
+<meta property="og:video:width" content="{{ vFormat.width }}" />
+<meta property="og:video:height" content="{{ vFormat.height }}" />
 <meta property="og:image" content="{{ videoInfo.thumbnail }}" />
 
 <meta http-equiv="refresh" content="0; url = {{ videoInfo.original_url }}" /> {% endblock %} {% block body %} Please wait...
