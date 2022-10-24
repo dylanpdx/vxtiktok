@@ -1,5 +1,5 @@
 Flask==2.2.2
 Flask-Cors==3.0.10
 yt-dlp==2022.10.4
-pymongo==4.2.0
+pymongo==4.3.2
 boto3==1.24.89
