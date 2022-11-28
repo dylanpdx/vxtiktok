@@ -67,11 +67,19 @@ def embedTiktok(sub_path):
     if request.path.startswith("/@"):
         baseURL = "https://www.tiktok.com" + request.path
     # if request.path matches regex "^\/[a-z][a-z]\." (starts with 2 lowercase characters, aka shortlinks), make a request and get the long URL for yt-dlp
-    elif re.match("^\/[a-z][a-z]\.", request.path):
-        print(request.path)
-        url = "https:/" + request.path
+    else:
+        domain = request.headers['Host']
+        if "." not in domain:
+            return "Error converting URL (Unsupported?)",500
+        # subdomain can be "vm.vxtiktok.com", "id.vxtiktok.com", "en.vxtiktok.com", etc.
+        # get main domain from subdomain
+        subdomain = domain.split(".")[0]
+        url = f"https://{subdomain}.tiktok.com{request.path}"
         r = requests.get(url, allow_redirects=False)
         baseURL = r.headers['location']
+        if baseURL == "https://www.tiktok.com/":
+            return "Expired TikTok URL", 400
+        print("Redirected to: " + baseURL)
     if user_agent in embed_user_agents:
         return embed_tiktok(baseURL)
     else:
