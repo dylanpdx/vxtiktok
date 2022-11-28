@@ -66,7 +66,6 @@ def embedTiktok(sub_path):
     # if request.path is of the format /@username/video/1234567891234567891, add https://www.tiktok.com to the beginning
     if request.path.startswith("/@"):
         baseURL = "https://www.tiktok.com" + request.path
-    # if request.path matches regex "^\/[a-z][a-z]\." (starts with 2 lowercase characters, aka shortlinks), make a request and get the long URL for yt-dlp
     else:
         domain = request.headers['Host']
         if "." not in domain:
@@ -75,6 +74,7 @@ def embedTiktok(sub_path):
         # get main domain from subdomain
         subdomain = domain.split(".")[0]
         url = f"https://{subdomain}.tiktok.com{request.path}"
+        # make a request and get the long URL for yt-dlp
         r = requests.get(url, allow_redirects=False)
         baseURL = r.headers['location']
         if baseURL == "https://www.tiktok.com/":
