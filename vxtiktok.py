@@ -4,6 +4,8 @@ from flask_cors import CORS
 import json
 import cache
 import config
+import re
+import requests
 
 app = Flask(__name__)
 CORS(app)
@@ -60,7 +62,16 @@ def embedTiktok(sub_path):
     user_agent = request.headers.get('user-agent')
     baseURL = request.base_url
     # bug: if the link doesn't end up being https://www.tiktok.com (for example https://tiktok.com) yt-dlp can't parse it
-    baseURL=baseURL.replace(config.currentConfig["MAIN"]["domainName"],"tiktok.com").replace("%40","@")
+
+    # if request.path is of the format /@username/video/1234567891234567891, add https://www.tiktok.com to the beginning
+    if request.path.startswith("/@"):
+        baseURL = "https://www.tiktok.com" + request.path
+    # if request.path matches regex "^\/[a-z][a-z]\." (starts with 2 lowercase characters, aka shortlinks), make a request and get the long URL for yt-dlp
+    elif re.match("^\/[a-z][a-z]\.", request.path):
+        print(request.path)
+        url = "https:/" + request.path
+        r = requests.get(url, allow_redirects=False)
+        baseURL = r.headers['location']
     if user_agent in embed_user_agents:
         return embed_tiktok(baseURL)
     else:
