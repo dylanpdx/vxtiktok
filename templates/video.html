@@ -4,7 +4,7 @@
 <meta property="og:site_name" content="{{ appname }}">
 
 <meta name="twitter:card" content="player" />
-<meta name="twitter:title" content="@{{ videoInfo.uploader }} on TikTok" />
+<meta name="twitter:title" content="{{ videoInfo.creator }} (@{{ videoInfo.uploader }})" />
 <meta name="twitter:image" content="{{ videoInfo.thumbnail }}" />
 <meta name="twitter:player:width" content="{{ vFormat.width }}" />
 <meta name="twitter:player:height" content="{{ vFormat.height }}" />
@@ -18,6 +18,10 @@
 <meta property="og:video:width" content="{{ vFormat.width }}" />
 <meta property="og:video:height" content="{{ vFormat.height }}" />
 <meta property="og:image" content="{{ videoInfo.thumbnail }}" />
+
+<meta property="og:description" content="{{ videoInfo.description }}" />
+
+<link rel="alternate" href="https://{{ domainName }}/owoembed?text={{ statsLine }}&url={{ videoInfo.original_url }}" type="application/json+oembed" title="{{ videoInfo.creator }}">
 
 <meta http-equiv="refresh" content="0; url = {{ videoInfo.original_url }}" /> {% endblock %} {% block body %} Please wait...
 <a href="{{ videoInfo.original_url }}">Or click here.</a> {% endblock %}

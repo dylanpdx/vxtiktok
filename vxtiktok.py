@@ -1,3 +1,4 @@
+from urllib.parse import quote
 from flask import Flask, render_template, request, redirect
 from yt_dlp import YoutubeDL
 from flask_cors import CORS
@@ -14,15 +15,15 @@ embed_user_agents = [
     "facebookexternalhit/1.1",
     "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.57 Safari/537.36",
     "Mozilla/5.0 (Windows; U; Windows NT 10.0; en-US; Valve Steam Client/default/1596241936; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36",
-    "Mozilla/5.0 (Windows; U; Windows NT 10.0; en-US; Valve Steam Client/default/0; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36", 
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/601.2.4 (KHTML, like Gecko) Version/9.0.1 Safari/601.2.4 facebookexternalhit/1.1 Facebot Twitterbot/1.0", 
+    "Mozilla/5.0 (Windows; U; Windows NT 10.0; en-US; Valve Steam Client/default/0; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/601.2.4 (KHTML, like Gecko) Version/9.0.1 Safari/601.2.4 facebookexternalhit/1.1 Facebot Twitterbot/1.0",
     "facebookexternalhit/1.1",
-    "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; Valve Steam FriendsUI Tenfoot/0; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36", 
-    "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)", 
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:38.0) Gecko/20100101 Firefox/38.0", 
-    "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)", 
-    "TelegramBot (like TwitterBot)", 
-    "Mozilla/5.0 (compatible; January/1.0; +https://gitlab.insrt.uk/revolt/january)", 
+    "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; Valve Steam FriendsUI Tenfoot/0; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36",
+    "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:38.0) Gecko/20100101 Firefox/38.0",
+    "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)",
+    "TelegramBot (like TwitterBot)",
+    "Mozilla/5.0 (compatible; January/1.0; +https://gitlab.insrt.uk/revolt/january)",
     "test"]
 
 def findApiFormat(videoInfo):
@@ -42,6 +43,22 @@ def getVideoFromPostURL(url):
         result = ydl.extract_info(url, download=False)
         return result
 
+def build_stats_line(videoInfo):
+    if videoInfo['view_count'] > 0 or videoInfo['like_count'] > 0 or videoInfo['repostCount'] > 0 or videoInfo['comment_count'] > 0:
+        text = ""
+
+        if videoInfo['view_count'] > 0:
+            text += f"{videoInfo['view_count']} 👁️    "
+        if videoInfo['like_count'] > 0:
+            text += f"{videoInfo['like_count']} ❤️    "
+        if videoInfo['repost_count'] > 0:
+            text += f"{videoInfo['repost_count']} 🔁    "
+        if videoInfo['comment_count'] > 0:
+            text += f"{videoInfo['comment_count']} 💬    "
+        return text
+    else:
+        return ""
+
 def embed_tiktok(post_link):
     cachedItem = cache.getFromCache(post_link)
     if cachedItem != None:
@@ -51,11 +68,24 @@ def embed_tiktok(post_link):
         cache.addToCache(post_link, videoInfo)
     vFormat = findApiFormat(videoInfo)
     directURL = vFormat['url']
-    return render_template('video.html', videoInfo=videoInfo,mp4URL=directURL,vFormat=vFormat,appname="vxTiktok")
+    statsLine = quote(build_stats_line(videoInfo))
+    return render_template('video.html', videoInfo=videoInfo, mp4URL=directURL, vFormat=vFormat, appname=config.currentConfig["MAIN"]["appName"], statsLine=statsLine, domainName=config.currentConfig["MAIN"]["domainName"])
 
 @app.route('/')
 def main():
     return redirect(config.currentConfig["MAIN"]["repoURL"])
+
+@app.route('/owoembed')
+def alternateJSON():
+    return {
+        "author_name": request.args.get('text'),
+        "author_url": request.args.get('url'),
+        "provider_name": config.currentConfig["MAIN"]["appName"],
+        "provider_url": config.currentConfig["MAIN"]["repoURL"],
+        "title": "TikTok",
+        "type": "link",
+        "version": "1.0"
+    }
 
 @app.route('/<path:sub_path>')
 def embedTiktok(sub_path):
