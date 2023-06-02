@@ -7,6 +7,8 @@ import cache
 import config
 import re
 import requests
+import io
+import base64
 
 app = Flask(__name__)
 CORS(app)
@@ -41,6 +43,37 @@ def findApiFormat(videoInfo):
 def getVideoFromPostURL(url):
     with YoutubeDL() as ydl:
         result = ydl.extract_info(url, download=False)
+
+        if result["formats"][0]["width"] == 0 and result["formats"][0]["height"] == 0:
+            # this is most likely a slideshow
+            return getSlideshowDataFromPostURL(url)
+        result["slideshowData"] = None
+        return result
+
+def getSlideshowDataFromPostURL(url): # thsi function assumes the url is a slideshow
+    with YoutubeDL(params={"dump_intermediate_pages":True}) as ydl:
+        f = io.StringIO()
+        ydl._out_files.screen = f # this is a hack to get the output of ydl to a variable
+        result = ydl.extract_info(url, download=False)
+        s=f.getvalue()
+        # find the first line that's valid base64 data
+        data=None
+        for line in s.splitlines():
+            if re.match(r"^[A-Za-z0-9+/=]+$", line):
+                data= json.loads(base64.b64decode(line).decode())
+        thisPost = data["aweme_list"][0]
+        postMusicURL = thisPost["music"]["play_url"]["uri"]
+        postImages = thisPost["image_post_info"]["images"]
+        imageUrls=[]
+        for image in postImages:
+            imageUrls.append(image["display_image"]["url_list"][0])
+
+        finalData = {
+            "musicURL": postMusicURL,
+            "imageURLs": imageUrls
+        }
+        result["slideshowData"] = finalData
+
         return result
 
 def build_stats_line(videoInfo):
@@ -62,7 +95,7 @@ def build_stats_line(videoInfo):
 def embed_tiktok(post_link):
     cachedItem = cache.getFromCache(post_link)
     if cachedItem != None:
-        videoInfo = cache.getFromCache(post_link)
+        videoInfo = cachedItem
     else:
         videoInfo = getVideoFromPostURL(post_link)
         cache.addToCache(post_link, videoInfo)
