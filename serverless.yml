@@ -20,7 +20,7 @@ provider:
     EMBED_COLOR: \#EE1D52
     REPO_URL: https://github.com/dylanpdx/vxtiktok
     DOMAINNAME: vxtiktok.com
-
+    SLIDESHOW_RENDERER: local
     CACHE_METHOD: dynamodb
     DATABASE_URL: none
     CACHE_TABLE: ${self:custom.tableName}
