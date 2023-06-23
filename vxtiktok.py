@@ -1,4 +1,4 @@
-from urllib.parse import quote
+from urllib.parse import quote, urljoin, urlparse
 from flask import Flask, render_template, request, redirect, send_file
 from yt_dlp import YoutubeDL
 from flask_cors import CORS
@@ -40,6 +40,8 @@ def findApiFormat(videoInfo):
     # not found, return the first one
     return videoInfo['formats'][0]
 
+def stripURL(url):
+    return urljoin(url, urlparse(url).path)
 
 def getVideoFromPostURL(url):
     with YoutubeDL() as ydl:
@@ -68,7 +70,7 @@ def getSlideshowFromPostURL(url): # thsi function assumes the url is a slideshow
         imageUrls=[]
         for image in postImages:
             for url in image["display_image"]["url_list"]:
-                if '.heic?' in url:
+                if '.heic?' in url: # not supported by ffmpeg
                     continue
                 imageUrls.append(url)
                 break
@@ -136,6 +138,7 @@ def alternateJSON():
 @app.route('/slideshow.mp4')
 def slideshow():
     url = request.args.get('url')
+    url = stripURL(url)
     slideshow = getVideoDataFromCacheOrDl(url)
     if "slideshowData" not in slideshow:
         return "This is not a slideshow", 400
@@ -174,7 +177,7 @@ def embedTiktok(sub_path):
         print("Redirected to: " + baseURL)
     else:
         return "Error converting URL (Unsupported?)",500
-
+    baseURL = stripURL(baseURL)
     if user_agent in embed_user_agents:
         return embed_tiktok(baseURL)
     else:
