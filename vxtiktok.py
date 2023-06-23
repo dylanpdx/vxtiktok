@@ -45,7 +45,7 @@ def getVideoFromPostURL(url):
     with YoutubeDL() as ydl:
         result = ydl.extract_info(url, download=False)
 
-        if result["formats"][0]["width"] == 0 and result["formats"][0]["height"] == 0:
+        if result["formats"][0]["url"].endswith(".mp3") or (result["formats"][0]["width"] == 0 and result["formats"][0]["height"] == 0):
             # this is most likely a slideshow
             return getSlideshowFromPostURL(url)
         result["slideshowData"] = None
