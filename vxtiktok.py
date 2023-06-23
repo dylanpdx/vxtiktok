@@ -1,5 +1,5 @@
 from urllib.parse import quote
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, send_file
 from yt_dlp import YoutubeDL
 from flask_cors import CORS
 import json
@@ -9,6 +9,7 @@ import re
 import requests
 import io
 import base64
+import slideshowBuilder
 
 app = Flask(__name__)
 CORS(app)
@@ -96,15 +97,23 @@ def build_stats_line(videoInfo):
     else:
         return ""
 
-def embed_tiktok(post_link):
+def getVideoDataFromCacheOrDl(post_link):
     cachedItem = cache.getFromCache(post_link)
     if cachedItem != None:
         videoInfo = cachedItem
     else:
         videoInfo = getVideoFromPostURL(post_link)
         cache.addToCache(post_link, videoInfo)
-    vFormat = findApiFormat(videoInfo)
-    directURL = vFormat['url']
+    return videoInfo
+
+def embed_tiktok(post_link):
+    videoInfo = getVideoDataFromCacheOrDl(post_link)
+    if "slideshowData" not in videoInfo or videoInfo["slideshowData"] == None:
+        vFormat = findApiFormat(videoInfo)
+        directURL = vFormat['url']
+    else:
+        vFormat = {"width": 1280, "height": 720}
+        directURL = "https://"+config.currentConfig["MAIN"]["domainName"]+"/slideshow.mp4?url="+post_link
     statsLine = quote(build_stats_line(videoInfo))
     return render_template('video.html', videoInfo=videoInfo, mp4URL=directURL, vFormat=vFormat, appname=config.currentConfig["MAIN"]["appName"], statsLine=statsLine, domainName=config.currentConfig["MAIN"]["domainName"])
 
@@ -123,6 +132,21 @@ def alternateJSON():
         "type": "link",
         "version": "1.0"
     }
+
+@app.route('/slideshow.mp4')
+def slideshow():
+    url = request.args.get('url')
+    slideshow = getVideoDataFromCacheOrDl(url)
+    if "slideshowData" not in slideshow:
+        return "This is not a slideshow", 400
+    if config.currentConfig["MAIN"]["slideshowRenderer"] != "local":
+        renderer=config.currentConfig["MAIN"]["slideshowRenderer"] # this is a url to an api that should return raw mp4 data
+        return redirect(f"{renderer}?url={url}",code=307)
+    # render locally
+    if config.currentConfig["MAIN"]["slideshowRenderer"] == "local":
+        b64 = slideshowBuilder.generateVideo(slideshow)
+        return send_file(io.BytesIO(base64.b64decode(b64)), mimetype='video/mp4')
+        
 
 @app.route('/<path:sub_path>')
 def embedTiktok(sub_path):

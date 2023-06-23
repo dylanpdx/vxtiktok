@@ -10,6 +10,7 @@ currentConfig["MAIN"]={
     "embedColor": "#EE1D52",
     "repoURL":"https://github.com/dylanpdx/vxtiktok",
     "domainName":"vxtiktok.com",
+    "slideshowRenderer":"local",
 }
 
 currentConfig["CACHE"]={
@@ -25,6 +26,7 @@ if 'RUNNING_SERVERLESS' in os.environ and os.environ['RUNNING_SERVERLESS'] == '1
         "embedColor": "#EE1D52",
         "repoURL":os.environ['REPO_URL'],
         "domainName":os.environ['DOMAINNAME'],
+        "slideshowRenderer":os.environ['SLIDESHOW_RENDERER'],
     }
     currentConfig["CACHE"]={
         "cacheMethod":os.environ['CACHE_METHOD'],
