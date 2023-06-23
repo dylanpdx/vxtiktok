@@ -46,11 +46,11 @@ def getVideoFromPostURL(url):
 
         if result["formats"][0]["width"] == 0 and result["formats"][0]["height"] == 0:
             # this is most likely a slideshow
-            return getSlideshowDataFromPostURL(url)
+            return getSlideshowFromPostURL(url)
         result["slideshowData"] = None
         return result
 
-def getSlideshowDataFromPostURL(url): # thsi function assumes the url is a slideshow
+def getSlideshowFromPostURL(url): # thsi function assumes the url is a slideshow
     with YoutubeDL(params={"dump_intermediate_pages":True}) as ydl:
         f = io.StringIO()
         ydl._out_files.screen = f # this is a hack to get the output of ydl to a variable
@@ -66,7 +66,11 @@ def getSlideshowDataFromPostURL(url): # thsi function assumes the url is a slide
         postImages = thisPost["image_post_info"]["images"]
         imageUrls=[]
         for image in postImages:
-            imageUrls.append(image["display_image"]["url_list"][0])
+            for url in image["display_image"]["url_list"]:
+                if '.heic?' in url:
+                    continue
+                imageUrls.append(url)
+                break
 
         finalData = {
             "musicURL": postMusicURL,
