@@ -2,7 +2,7 @@ Flask==2.3.2
 Flask-Cors==3.0.10
 yt-dlp==2023.7.6
 pymongo==4.3.3
-boto3==1.28.3
+boto3==1.28.9
 requests==2.31.0
 idna<4,>=2.5
 urllib3>=1.21.1,<2.1
