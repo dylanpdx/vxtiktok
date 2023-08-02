@@ -10,7 +10,7 @@ import requests
 import io
 import base64
 import slideshowBuilder
-
+import html
 app = Flask(__name__)
 CORS(app)
 
@@ -28,6 +28,12 @@ embed_user_agents = [
     "TelegramBot (like TwitterBot)",
     "Mozilla/5.0 (compatible; January/1.0; +https://gitlab.insrt.uk/revolt/january)",
     "test"]
+
+def message(text):
+    return render_template(
+        'message.html', 
+        message = text, 
+        appname=config.currentConfig["MAIN"]["appName"])
 
 def findApiFormat(videoInfo):
     for format in videoInfo['formats']:
@@ -100,16 +106,22 @@ def build_stats_line(videoInfo):
         return ""
 
 def getVideoDataFromCacheOrDl(post_link):
-    cachedItem = cache.getFromCache(post_link)
-    if cachedItem != None:
-        videoInfo = cachedItem
-    else:
-        videoInfo = getVideoFromPostURL(post_link)
-        cache.addToCache(post_link, videoInfo)
-    return videoInfo
+    try:
+        cachedItem = cache.getFromCache(post_link)
+        if cachedItem != None:
+            videoInfo = cachedItem
+        else:
+            videoInfo = getVideoFromPostURL(post_link)
+            cache.addToCache(post_link, videoInfo)
+        return videoInfo
+    except Exception as e:
+        print(e)
+        return None
 
 def embed_tiktok(post_link):
     videoInfo = getVideoDataFromCacheOrDl(post_link)
+    if videoInfo == None:
+        return message("Failed to get video data from TikTok")
     if "slideshowData" not in videoInfo or videoInfo["slideshowData"] == None:
         vFormat = findApiFormat(videoInfo)
         directURL = vFormat['url']
@@ -168,7 +180,10 @@ def embedTiktok(sub_path):
         # subdomain can be "vm.vxtiktok.com", "id.vxtiktok.com", "en.vxtiktok.com", etc.
         # get main domain from subdomain
         subdomain = (request.headers['Host']).split(".")[0]
-        url = f"https://{subdomain}.tiktok.com{request.path}"
+        if subdomain != "vxtiktok":
+            url = f"https://{subdomain}.tiktok.com{request.path}"
+        else:
+            url = f"https://tiktok.com{request.path}"
         # make a request and get the long URL for yt-dlp
         r = requests.get(url, allow_redirects=False)
         baseURL = r.headers['location']

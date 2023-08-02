@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <meta content="{{ appname }}" property="og:title" />
+    <meta content="{{ message }}" property="og:description" />
+    <meta content="{{ color }}"  name="theme-color" />
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>{{ message }}</h1>
+            </div>
+        </div>
+    </div>
+{% endblock %}
