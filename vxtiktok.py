@@ -194,6 +194,7 @@ def embedTiktok(sub_path):
         return "Error converting URL (Unsupported?)",500
     baseURL = stripURL(baseURL)
     if user_agent in embed_user_agents:
+        baseURL = baseURL.replace("/photo/", "/video/")
         return embed_tiktok(baseURL)
     else:
         return redirect(baseURL)
