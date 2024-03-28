@@ -1,4 +1,4 @@
-Flask==2.3.3
+Flask==3.0.2
 Flask-Cors==4.0.0
 yt-dlp @ git+https://github.com/bashonly/yt-dlp@2ba80d55d4bd9476dd2304496f8af9bf68358a2e
 pymongo==4.5.0
