@@ -1,6 +1,6 @@
 Flask==2.3.3
 Flask-Cors==4.0.0
-yt-dlp @ git+https://github.com/bashonly/yt-dlp@2ba80d55d4bd9476dd2304496f8af9bf68358a2e
+yt-dlp==2024.04.09
 pymongo==4.5.0
 boto3==1.28.37
 requests==2.31.0

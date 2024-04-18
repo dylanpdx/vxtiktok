@@ -29,6 +29,11 @@ embed_user_agents = [
     "Mozilla/5.0 (compatible; January/1.0; +https://gitlab.insrt.uk/revolt/january)",
     "test"]
 
+tiktokArgs={ # TODO: temp fix, replace with values from config
+    "api_hostname":["api16-normal-c-useast1a.tiktokv.com"],
+    "app_info":["7355728856979392262"]
+}
+
 def message(text):
     return render_template(
         'message.html', 
@@ -50,7 +55,7 @@ def stripURL(url):
     return urljoin(url, urlparse(url).path)
 
 def getVideoFromPostURL(url):
-    with YoutubeDL() as ydl:
+    with YoutubeDL(params={"extractor_args":{"tiktok":tiktokArgs}}) as ydl:
         result = ydl.extract_info(url, download=False)
 
         if result["formats"][0]["url"].endswith(".mp3") or (result["formats"][0]["width"] == 0 and result["formats"][0]["height"] == 0):
@@ -60,7 +65,7 @@ def getVideoFromPostURL(url):
         return result
 
 def getSlideshowFromPostURL(url): # thsi function assumes the url is a slideshow
-    with YoutubeDL(params={"dump_intermediate_pages":True}) as ydl:
+    with YoutubeDL(params={"dump_intermediate_pages":True,"extractor_args":{"tiktok":tiktokArgs}}) as ydl:
         f = io.StringIO()
         ydl._out_files.screen = f # this is a hack to get the output of ydl to a variable
         result = ydl.extract_info(url, download=False)
