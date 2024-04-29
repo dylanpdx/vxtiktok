@@ -1,7 +1,7 @@
 Flask==2.3.3
 Flask-Cors==4.0.0
 yt-dlp==2024.04.09
-pymongo==4.5.0
+pymongo==4.7.0
 boto3==1.28.37
 requests==2.31.0
 idna<4,>=2.5
