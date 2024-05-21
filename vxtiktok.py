@@ -29,10 +29,7 @@ embed_user_agents = [
     "Mozilla/5.0 (compatible; January/1.0; +https://gitlab.insrt.uk/revolt/january)",
     "test"]
 
-tiktokArgs={ # TODO: temp fix, replace with values from config
-    "api_hostname":["api16-normal-c-useast1a.tiktokv.com"],
-    "app_info":["7355728856979392262"]
-}
+tiktokArgs={}
 
 def message(text):
     return render_template(
