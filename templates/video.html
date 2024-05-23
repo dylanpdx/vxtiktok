@@ -4,24 +4,24 @@
 <meta property="og:site_name" content="{{ appname }}">
 
 <meta name="twitter:card" content="player" />
-<meta name="twitter:title" content="{{ videoInfo.creator }} (@{{ videoInfo.uploader }})" />
-<meta name="twitter:image" content="{{ videoInfo.thumbnail }}" />
+<meta name="twitter:title" content="{{ videoInfo.author.nickname }} (@{{ videoInfo.author.uniqueId }})" />
+<meta name="twitter:image" content="{{ vFormat["cover"] }}" />
 <meta name="twitter:player:width" content="{{ vFormat.width }}" />
 <meta name="twitter:player:height" content="{{ vFormat.height }}" />
 <meta name="twitter:player:stream" content="{{ mp4URL|safe }}" />
 <meta name="twitter:player:stream:content_type" content="video/mp4" />
 
-<meta property="og:url" content="{{ videoInfo.original_url }}" />
+<meta property="og:url" content="{{ original_url }}" />
 <meta property="og:video" content="{{ mp4URL|safe }}" />
 <meta property="og:video:secure_url" content="{{ mp4URL|safe }}" />
 <meta property="og:video:type" content="video/mp4" />
 <meta property="og:video:width" content="{{ vFormat.width }}" />
 <meta property="og:video:height" content="{{ vFormat.height }}" />
-<meta property="og:image" content="{{ videoInfo.thumbnail }}" />
+<meta property="og:image" content="{{ vFormat["cover"] }}" />
 
-<meta property="og:description" content="{{ videoInfo.description }}" />
+<meta property="og:description" content="{{ videoInfo["desc"] }}" />
 
-<link rel="alternate" href="https://{{ domainName }}/owoembed?text={{ statsLine }}&url={{ videoInfo.original_url }}" type="application/json+oembed" title="{{ videoInfo.creator }}">
+<link rel="alternate" href="https://{{ domainName }}/owoembed?text={{ statsLine }}&url={{ original_url }}" type="application/json+oembed" title="{{ videoInfo.creator }}">
 
-<meta http-equiv="refresh" content="0; url = {{ videoInfo.original_url }}" /> {% endblock %} {% block body %} Please wait...
-<a href="{{ videoInfo.original_url }}">Or click here.</a> {% endblock %}
+<meta http-equiv="refresh" content="0; url = {{ original_url }}" /> {% endblock %} {% block body %} Please wait...
+<a href="{{ original_url }}">Or click here.</a> {% endblock %}

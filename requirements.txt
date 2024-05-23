@@ -1,6 +1,6 @@
 Flask==2.3.3
 Flask-Cors==4.0.0
-yt-dlp==2024.5.20.232721.dev0
+yt-dlp==2024.5.22.232749.dev0
 pymongo==4.5.0
 boto3==1.28.37
 requests==2.32.0

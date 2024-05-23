@@ -1,5 +1,5 @@
 from urllib.parse import quote, urljoin, urlparse
-from flask import Flask, render_template, request, redirect, send_file
+from flask import Flask, render_template, request, redirect, send_file, abort
 from yt_dlp import YoutubeDL
 from flask_cors import CORS
 import json
@@ -31,6 +31,18 @@ embed_user_agents = [
 
 tiktokArgs={}
 
+def getWebDataFromResponse(response):
+    if response.status_code != 200:
+        return None
+    # regex to find the json data: <script id="__UNIVERSAL_DATA_FOR_REHYDRATION__" type="application\/json">(.*)}<\/script>
+    rx = re.compile(r'<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__" type="application\/json">(.*)}<\/script>')
+    match = rx.search(response.text)
+    if match == None:
+        return None
+    data = match.group(1) + "}"
+    return json.loads(data)
+
+
 def message(text):
     return render_template(
         'message.html', 
@@ -38,28 +50,49 @@ def message(text):
         appname=config.currentConfig["MAIN"]["appName"])
 
 def findApiFormat(videoInfo):
-    for format in videoInfo['formats']:
-        if format['format_id'] == 'download_addr-0':
-            return format
-    # not found, search for the next best one
-    for format in videoInfo['formats']:
-        if format['url'].startswith('http://api'):
-            return format
-    # not found, return the first one
-    return videoInfo['formats'][0]
+    vid = videoInfo['video']
+    return {"width": vid['width'], "height": vid['height'], "url": vid["downloadAddr"],"thumb":vid["cover"]}
 
 def stripURL(url):
     return urljoin(url, urlparse(url).path)
 
-def getVideoFromPostURL(url):
-    with YoutubeDL(params={"extractor_args":{"tiktok":tiktokArgs}}) as ydl:
-        result = ydl.extract_info(url, download=False)
+def getVideoFromPostURL(url,includeCookies=False):
+    rb = requests.get(url, headers={
+        "User-Agent": "Mozilla/5.0",
+        "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Sec-Fetch-Mode": "navigate",
+        "Accept-Encoding": "gzip, deflate, br"
+    })
+    videoInfo = getWebDataFromResponse(rb)
 
-        if result["formats"][0]["url"].endswith(".mp3") or (result["formats"][0]["width"] == 0 and result["formats"][0]["height"] == 0):
-            # this is most likely a slideshow
-            return getSlideshowFromPostURL(url)
-        result["slideshowData"] = None
-        return result
+    if "webapp.video-detail" not in videoInfo["__DEFAULT_SCOPE__"]:
+        return None
+
+    vdata = videoInfo["__DEFAULT_SCOPE__"]["webapp.video-detail"]["itemInfo"]["itemStruct"]
+    if includeCookies:
+        vdata["Cookies"] = rb.cookies.get_dict()
+    return vdata
+
+def downloadVideoFromPostURL(url):
+    videoInfo = getVideoFromPostURL(url,includeCookies=True)
+    vFormat = findApiFormat(videoInfo)
+    cookies = videoInfo["Cookies"]
+
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Sec-Fetch-Mode": "navigate",
+        "Accept-Encoding": "gzip, deflate, br"
+    }
+    headers["Cookie"] = "; ".join([f"{k}={v}" for k,v in cookies.items()])
+
+
+    r = requests.get(vFormat["url"], headers=headers)
+    if r.status_code != 200:
+        return None
+    return r.content
 
 def getSlideshowFromPostURL(url): # thsi function assumes the url is a slideshow
     with YoutubeDL(params={"dump_intermediate_pages":True,"extractor_args":{"tiktok":tiktokArgs}}) as ydl:
@@ -92,6 +125,10 @@ def getSlideshowFromPostURL(url): # thsi function assumes the url is a slideshow
         return result
 
 def build_stats_line(videoInfo):
+    videoInfo["view_count"] = videoInfo["stats"]["playCount"]
+    videoInfo["like_count"] = videoInfo["stats"]["diggCount"]
+    videoInfo["repost_count"] = videoInfo["stats"]["shareCount"]
+    videoInfo["comment_count"] = videoInfo["stats"]["commentCount"]
     if videoInfo['view_count'] > 0 or videoInfo['like_count'] > 0 or videoInfo['repostCount'] > 0 or videoInfo['comment_count'] > 0:
         text = ""
 
@@ -114,6 +151,8 @@ def getVideoDataFromCacheOrDl(post_link):
             videoInfo = cachedItem
         else:
             videoInfo = getVideoFromPostURL(post_link)
+            if videoInfo == None:
+                return None
             cache.addToCache(post_link, videoInfo)
         return videoInfo
     except Exception as e:
@@ -126,16 +165,25 @@ def embed_tiktok(post_link):
         return message("Failed to get video data from TikTok")
     if "slideshowData" not in videoInfo or videoInfo["slideshowData"] == None:
         vFormat = findApiFormat(videoInfo)
-        directURL = vFormat['url']
+
+        directURL = f"https://"+config.currentConfig["MAIN"]["domainName"]+"/vid/"+videoInfo["author"]["uniqueId"]+"/"+videoInfo["id"]+".mp4"
     else:
         vFormat = {"width": 1280, "height": 720}
         directURL = "https://"+config.currentConfig["MAIN"]["domainName"]+"/slideshow.mp4?url="+post_link
     statsLine = quote(build_stats_line(videoInfo))
-    return render_template('video.html', videoInfo=videoInfo, mp4URL=directURL, vFormat=vFormat, appname=config.currentConfig["MAIN"]["appName"], statsLine=statsLine, domainName=config.currentConfig["MAIN"]["domainName"])
+    return render_template('video.html', videoInfo=videoInfo, mp4URL=directURL, vFormat=vFormat, appname=config.currentConfig["MAIN"]["appName"], statsLine=statsLine, domainName=config.currentConfig["MAIN"]["domainName"],original_url = post_link)
 
 @app.route('/')
 def main():
     return redirect(config.currentConfig["MAIN"]["repoURL"])
+
+@app.route('/vid/<author>/<vid>.mp4')
+def video(author, vid):
+    post_link = f"https://www.tiktok.com/@{author}/video/{vid}"
+    videoData = downloadVideoFromPostURL(post_link)
+    if videoData == None:
+        abort(500)
+    return send_file(io.BytesIO(videoData), mimetype='video/mp4')
 
 @app.route('/owoembed')
 def alternateJSON():
