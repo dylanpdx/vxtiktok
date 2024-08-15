@@ -44,10 +44,11 @@ async function getWebDataFromResponse(response) {
 
 function findApiFormat(videoInfo) {
     const vid = videoInfo.video
+    const addr = vid.downloadAddr == null ? vid.downloadAddrAdr : vid.playAddr
     return {
         width: vid.width,
         height: vid.height,
-        url: vid.downloadAddr,
+        url: addr,
         thumb: vid.cover
     }
 }
