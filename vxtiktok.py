@@ -51,7 +51,14 @@ def message(text):
 
 def findApiFormat(videoInfo):
     vid = videoInfo['video']
-    return {"width": vid['width'], "height": vid['height'], "url": vid["downloadAddr"],"thumb":vid["cover"]}
+
+    addr = None
+    if "downloadAddr" in vid and vid["downloadAddr"] != None and vid["downloadAddr"] != "":
+        addr = vid["downloadAddr"]
+    else:
+        addr = vid["playAddr"]
+
+    return {"width": vid['width'], "height": vid['height'], "url": addr,"thumb":vid["cover"]}
 
 def stripURL(url):
     return urljoin(url, urlparse(url).path)
