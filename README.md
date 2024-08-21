@@ -9,6 +9,7 @@ Just replace tiktok.com with vxtiktok.com on the link to the TikTok post! `https
 We handle various TikTok URL formats, including short mobile URLs and subdomain variants. The application will attempt to resolve these to the full TikTok URL before processing. Be sure to only replace "tiktok" in the url (i.e `vm.tiktok.com` -> `vm.vxtiktok.com`)
 
 For TikTok posts containing multiple images, a slideshow video will be generated* (This can be done locally or via an external API, depending on the configuration.)
+
 \* As of the time of writing, due to TikTok API changes this may not be working
 
 **Note**: If you enjoy this service, please consider donating to help cover server costs. https://ko-fi.com/dylanpdx
