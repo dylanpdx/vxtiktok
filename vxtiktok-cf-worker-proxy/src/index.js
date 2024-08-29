@@ -44,7 +44,7 @@ async function getWebDataFromResponse(response) {
 
 function findApiFormat(videoInfo) {
     const vid = videoInfo.video
-    const addr = (vid.downloadAddr == null || vid.downloadAddr == '') ? vid.downloadAddrAdr : vid.playAddr
+    const addr = (vid.downloadAddr == null || vid.downloadAddr != '') ? vid.downloadAddrAdr : vid.playAddr
     return {
         width: vid.width,
         height: vid.height,
@@ -59,8 +59,7 @@ async function getVideoFromPostURL(url, includeCookies = false) {
             'User-Agent': 'Mozilla/5.0',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
-            'Sec-Fetch-Mode': 'navigate',
-            'Accept-Encoding': 'gzip, deflate, br'
+            'Sec-Fetch-Mode': 'navigate'
         }
     })
     const videoInfo = await getWebDataFromResponse(response)
@@ -75,8 +74,6 @@ async function getVideoFromPostURL(url, includeCookies = false) {
         vdata.Cookies = vdata.Cookies.replace(/;\s*httponly/gi, '')
         vdata.Cookies = vdata.Cookies.replace(/, /g, '; ')
 
-
-        console.log(vdata.Cookies)
     }
     return vdata
 }
