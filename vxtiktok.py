@@ -173,7 +173,7 @@ def embed_tiktok(post_link):
     if "slideshowData" not in videoInfo or videoInfo["slideshowData"] == None:
         vFormat = findApiFormat(videoInfo)
 
-        directURL = f"https://"+config.currentConfig["MAIN"]["domainName"]+"/vid/"+videoInfo["author"]["uniqueId"]+"/"+videoInfo["id"]+".mp4"
+        directURL = f"https://"+config.currentConfig["MAIN"]["domainName"]+"/vid/"+videoInfo["author"]["uniqueId"]+"/"+videoInfo["id"]#+".mp4"
     else:
         vFormat = {"width": 1280, "height": 720}
         directURL = "https://"+config.currentConfig["MAIN"]["domainName"]+"/slideshow.mp4?url="+post_link
@@ -184,8 +184,10 @@ def embed_tiktok(post_link):
 def main():
     return redirect(config.currentConfig["MAIN"]["repoURL"])
 
-@app.route('/vid/<author>/<vid>.mp4')
+@app.route('/vid/<author>/<vid>')
 def video(author, vid):
+    if vid.endswith(".mp4"):
+        vid = vid[:-4]
     post_link = f"https://www.tiktok.com/@{author}/video/{vid}"
     videoData = downloadVideoFromPostURL(post_link)
     if videoData == None:

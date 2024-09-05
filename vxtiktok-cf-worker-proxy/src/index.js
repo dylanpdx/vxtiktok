@@ -6,13 +6,17 @@ async function handleRequest(request) {
     const url = new URL(request.url)
     const path = url.pathname
 
-    const match = path.match(/^\/vid\/([^\/]+)\/([^\/]+)\.mp4$/)
+    let match = path.match(/^\/vid\/([^\/]+)\/([^\/]+)$/)
     if (!match) {
         return new Response('Invalid URL format', { status: 400 })
     }
 
     const author = match[1]
-    const vid = match[2]
+    let vid = match[2]
+
+    if (vid.endsWith('.mp4')) {
+        vid = vid.slice(0, -4)
+    }
 
     const postLink = `https://www.tiktok.com/@${author}/video/${vid}`
     const videoData = await downloadVideoFromPostURL(postLink)
