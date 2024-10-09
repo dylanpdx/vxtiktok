@@ -1,4 +1,5 @@
 from urllib.parse import quote, urljoin, urlparse
+import urllib.parse
 from flask import Flask, render_template, request, redirect, send_file, abort
 from yt_dlp import YoutubeDL
 from flask_cors import CORS
@@ -11,6 +12,7 @@ import io
 import base64
 import slideshowBuilder
 import html
+import urllib
 app = Flask(__name__)
 CORS(app)
 
@@ -174,8 +176,9 @@ def embed_tiktok(post_link):
 
         directURL = f"https://"+config.currentConfig["MAIN"]["domainName"]+"/vid/"+videoInfo["author"]["uniqueId"]+"/"+videoInfo["id"]#+".mp4"
     else:
-        vFormat = {"width": 1280, "height": 720}
-        directURL = "https://"+config.currentConfig["MAIN"]["domainName"]+"/slideshow.mp4?url="+post_link
+        vFormat = {"width": 1280, "height": 720, "cover":videoInfo["slideshowData"]["imageURLs"][0]}
+        encoded_url=urllib.parse.quote(post_link)
+        directURL = "https://"+config.currentConfig["MAIN"]["domainName"]+"/slideshow.mp4?url="+encoded_url
     statsLine = quote(build_stats_line(videoInfo))
     return render_template('video.html', videoInfo=videoInfo, mp4URL=directURL, vFormat=vFormat, appname=config.currentConfig["MAIN"]["appName"], statsLine=statsLine, domainName=config.currentConfig["MAIN"]["domainName"],original_url = post_link)
 
@@ -214,7 +217,8 @@ def slideshow():
         return "This is not a slideshow", 400
     if config.currentConfig["MAIN"]["slideshowRenderer"] != "local":
         renderer=config.currentConfig["MAIN"]["slideshowRenderer"] # this is a url to an api that should return raw mp4 data
-        return redirect(f"{renderer}?url={url}",code=307)
+        eurl=urllib.parse.quote(url)
+        return redirect(f"{renderer}?url={eurl}",code=307)
     # render locally
     if config.currentConfig["MAIN"]["slideshowRenderer"] == "local":
         b64 = slideshowBuilder.generateVideo(slideshow)
