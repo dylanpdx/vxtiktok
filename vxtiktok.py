@@ -35,7 +35,7 @@ def getWebDataFromResponse(response):
     if response.status_code != 200:
         return None
     # regex to find the json data: <script id="__UNIVERSAL_DATA_FOR_REHYDRATION__" type="application\/json">(.*)}<\/script>
-    rx = re.compile(r'<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__" type="application\/json">(.*)}<\/script>')
+    rx = re.compile(r'<script *id="__UNIVERSAL_DATA_FOR_REHYDRATION__" *type="application\/json">(.*)}<\/script>')
     match = rx.search(response.text)
     if match == None:
         return None
@@ -79,11 +79,22 @@ def getVideoFromPostURL(url,includeCookies=False):
     vdata = videoInfo["__DEFAULT_SCOPE__"]["webapp.video-detail"]["itemInfo"]["itemStruct"]
     if includeCookies:
         vdata["Cookies"] = rb.cookies.get_dict()
+
+    if isVFormatSlideshow(findApiFormat(vdata)):
+        vdata["slideshowData"] = getSlideshowData(vdata)
+
     return vdata
+
+def isVFormatSlideshow(vFormat):
+    return vFormat['width'] == 0 and vFormat['height'] == 0
 
 def downloadVideoFromPostURL(url):
     videoInfo = getVideoFromPostURL(url,includeCookies=True)
     vFormat = findApiFormat(videoInfo)
+
+    if isVFormatSlideshow(vFormat):
+        return None # this is a slideshow, not a video
+
     cookies = videoInfo["Cookies"]
 
     headers = {
@@ -101,35 +112,23 @@ def downloadVideoFromPostURL(url):
         return None
     return r.content
 
-def getSlideshowFromPostURL(url): # thsi function assumes the url is a slideshow
-    with YoutubeDL(params={"dump_intermediate_pages":True,"extractor_args":{"tiktok":tiktokArgs}}) as ydl:
-        f = io.StringIO()
-        ydl._out_files.screen = f # this is a hack to get the output of ydl to a variable
-        result = ydl.extract_info(url, download=False)
-        s=f.getvalue()
-        # find the first line that's valid base64 data
-        data=None
-        for line in s.splitlines():
-            if re.match(r"^[A-Za-z0-9+/=]+$", line):
-                data= json.loads(base64.b64decode(line).decode())
-        thisPost = data["aweme_list"][0]
-        postMusicURL = thisPost["music"]["play_url"]["uri"]
-        postImages = thisPost["image_post_info"]["images"]
-        imageUrls=[]
-        for image in postImages:
-            for url in image["display_image"]["url_list"]:
-                if '.heic?' in url: # not supported by ffmpeg
-                    continue
-                imageUrls.append(url)
-                break
+def getSlideshowData(thisPost): # thsi function assumes the url is a slideshow
+    postMusicURL = thisPost["music"]["playUrl"]
+    postImages = thisPost["imagePost"]["images"]
+    imageUrls=[]
+    for image in postImages:
+        for url in image["imageURL"]["urlList"]:
+            if '.heic?' in url: # not supported by ffmpeg
+                continue
+            imageUrls.append(url)
+            break
 
-        finalData = {
-            "musicURL": postMusicURL,
-            "imageURLs": imageUrls
-        }
-        result["slideshowData"] = finalData
+    finalData = {
+        "musicURL": postMusicURL,
+        "imageURLs": imageUrls
+    }
 
-        return result
+    return finalData
 
 def build_stats_line(videoInfo):
     videoInfo["view_count"] = videoInfo["stats"]["playCount"]

@@ -9,6 +9,10 @@ def generateVideo(slideshowVideoData):
     # slideshowData = {..., "slideshowData":{"musicUrl":"","imageUrls":[]}}
     slideshowData = slideshowVideoData["slideshowData"]
     txtData = ""
+
+    if len(slideshowData["imageURLs"]) == 1:
+        slideshowData["imageURLs"].append(slideshowData["imageURLs"][0])
+
     for url in slideshowData["imageURLs"]:
         txtData += f"file '{url}'\nduration 2\n"
     with tempfile.TemporaryDirectory() as tmpdirname:
