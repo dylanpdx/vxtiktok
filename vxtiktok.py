@@ -1,7 +1,6 @@
 from urllib.parse import quote, urljoin, urlparse
 import urllib.parse
 from flask import Flask, render_template, request, redirect, send_file, abort
-from yt_dlp import YoutubeDL
 from flask_cors import CORS
 import json
 import cache
@@ -185,6 +184,10 @@ def embed_tiktok(post_link):
 @app.route('/')
 def main():
     return redirect(config.currentConfig["MAIN"]["repoURL"])
+
+@app.route('/robots.txt')
+def robots():
+    return "User-agent: *\nDisallow: /"
 
 @app.route('/vid/<author>/<vid>')
 def video(author, vid):
