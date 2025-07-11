@@ -1,3 +1,9 @@
+# NOTICE 2025/07/11:
+TikTok has blocked all methods I use for getting information from videos, and as I currently don't have the time to dedicate to this project, it is indefinitely on hold.
+
+As a workaround to keep all vxtiktok.com links working properly, they will now redirect to an alternative service, kkTiktok, [which is hosted by kkscript](kkscript.com)
+
+------
 # vxtiktok
 Basic Website that serves fixed TikTok video embeds to various platforms (i.e Discord) by using yt-dlp to grab TikTok video information. 
 ## How to use the hosted version
