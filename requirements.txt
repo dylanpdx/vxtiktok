@@ -1,4 +1,4 @@
-Flask==2.3.3
+Flask==3.0.3
 Flask-Cors==4.0.0
 yt-dlp==2024.08.06
 pymongo==4.5.0
