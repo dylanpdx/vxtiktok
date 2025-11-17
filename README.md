@@ -1,3 +1,7 @@
+# NOTICE 2025/11/17:
+
+Due to a legal request, this service is no longer available.
+
 # NOTICE 2025/07/11:
 TikTok has blocked all methods I use for getting information from videos, and as I currently don't have the time to dedicate to this project, it is indefinitely on hold.
 
